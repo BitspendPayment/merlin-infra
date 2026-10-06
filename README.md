@@ -1,7 +1,7 @@
 # merlin-infra
 
 Merlin's MutinyNet deployment. The MerlinWallet cosigner runs in a **real AWS Nitro enclave**
-(enclave-runtime's production image), and MerlinPlatform runs on the same machine, on an m6i.xlarge
+(enclave-runtime's production image), and MerlinPlatform runs on the same machine, on a c6i.xlarge
 in us-east-1 that is up only while it is needed.
 
 ```
@@ -40,8 +40,8 @@ because one of the settings is the Grid sandbox view token.
 | | |
 |---|---|
 | Stopped | about $2.70 a month: the 32 GB root disk and the 1 GB platform volume |
-| Up | about $0.20 an hour: m6i.xlarge $0.192 plus its public IPv4 |
-| One hour a day | about $8.70 a month |
+| Up | about $0.18 an hour: c6i.xlarge $0.170 plus its public IPv4 |
+| One hour a day | about $8 a month |
 
 There is no Elastic IP. Each start gets a new address, and `up.sh` points the name at it.
 

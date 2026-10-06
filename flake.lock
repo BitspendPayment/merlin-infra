@@ -22,11 +22,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1791270835,
-        "narHash": "sha256-MOq1mYxwDHsNFwJi/Alw4P+XZiVFDS+zEs/gb1G2Qoc=",
+        "lastModified": 1791280810,
+        "narHash": "sha256-tAgN7XEN/ja9Ekqt1EMd5BCF0ZMI/WTteG6hYvaWHKw=",
         "owner": "BitspendPayment",
         "repo": "enclave-runtime",
-        "rev": "5d46166eabd0ecb68af32069c07e24ae15880f96",
+        "rev": "ae200d4a7b5bb5374617ef48e5b9cf1bb34a275f",
         "type": "github"
       },
       "original": {

@@ -57,14 +57,14 @@ locals {
 # EIF's expectations of its parent (gvproxy's address map, IMDS hop limit) come
 # from the same tree.
 module "enclave" {
-  source = "git::https://github.com/BitspendPayment/enclave-runtime.git//deploy/tofu?ref=5d46166eabd0ecb68af32069c07e24ae15880f96"
+  source = "git::https://github.com/BitspendPayment/enclave-runtime.git//deploy/tofu?ref=ae200d4a7b5bb5374617ef48e5b9cf1bb34a275f"
 
   aws_profile       = "mpc-deployer"
   region            = "us-east-1"
   name_prefix       = "merlin"
   environment       = "mutinynet"
   ami_id            = local.ami
-  instance_type     = "m6i.xlarge"
+  instance_type     = "c6i.xlarge"
   availability_zone = local.base.availability_zone
   buckets           = [local.base.data_bucket, local.base.roots_bucket]
   tls_domains       = ["mutiny.vtxos.network"]

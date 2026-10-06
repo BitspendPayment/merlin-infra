@@ -11,7 +11,7 @@
 
   # The filesystem's HKDF salt. Fixed for the life of the store: a new one is a
   # new, empty filesystem.
-  fsId = "8267e21b44ea881d5220450fbdf8d10a";
+  fsId = "d2eefdf457df42df7a068d9c178e85cc";
 
   region = "us-east-1";
 
@@ -19,8 +19,8 @@
   # where it is kept sealed, one parameter per store. deploy.sh locks the key to
   # the first release it ships, for good; a new release needs a new key, a new
   # fsId and so a fresh store (README).
-  kmsKeyId = "arn:aws:kms:us-east-1:639920118099:key/00c6bd22-0753-4adb-bc8c-3661e61fe40e";
-  masterKeyParameter = "/merlin/mutinynet/master-key/8267e21b44ea881d5220450fbdf8d10a";
+  kmsKeyId = "arn:aws:kms:us-east-1:639920118099:key/96489c16-422a-4c8e-a8a8-761f9717aca2";
+  masterKeyParameter = "/merlin/mutinynet/master-key/d2eefdf457df42df7a068d9c178e85cc";
 
   # Test coins: root records stay locked for a day, not ten years, so the
   # buckets can be retired. Production says ten years.
