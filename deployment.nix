@@ -19,7 +19,7 @@
   # where it is kept sealed, one parameter per store. deploy.sh locks the key to
   # the first release it ships, for good; a new release needs a new key, a new
   # fsId and so a fresh store (README).
-  kmsKeyId = "CHANGE-ME: tofu output kms_key_arn";
+  kmsKeyId = "arn:aws:kms:us-east-1:639920118099:key/00c6bd22-0753-4adb-bc8c-3661e61fe40e";
   masterKeyParameter = "/merlin/mutinynet/master-key/8267e21b44ea881d5220450fbdf8d10a";
 
   # Test coins: root records stay locked for a day, not ten years, so the
@@ -48,5 +48,5 @@
   backgroundConcurrency = 1;
 
   # `tofu output push_app_id`.
-  pushAppId = "CHANGE-ME: tofu output push_app_id";
+  pushAppId = "cce7d19f815242c1879d323f11c0bc85";
 }
