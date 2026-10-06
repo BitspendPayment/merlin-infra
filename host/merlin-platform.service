@@ -1,0 +1,16 @@
+[Unit]
+Description=MerlinPlatform (payouts to banks and mobile money, repaid from the escrow)
+After=network-online.target
+Wants=network-online.target
+# Its keys and its store are on the platform volume; without it there is nothing to run.
+RequiresMountsFor=/srv/platform
+
+[Service]
+User=merlin
+EnvironmentFile=/etc/merlin/platform.env
+ExecStart=/usr/local/bin/merlin-platform-start
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

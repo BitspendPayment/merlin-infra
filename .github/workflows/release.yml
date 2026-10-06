@@ -1,0 +1,115 @@
+# A release: the enclave image (with its PCR0), the cosigner and MerlinPlatform, built here from
+# public sources so anyone can rebuild them and compare. deploy.sh <tag> ships one.
+#
+# The cosigner is released bare. Its MutinyNet settings, one of them the Grid view token, are
+# written into it at deploy time, and PCR16 is measured then.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  eif:
+    name: enclave image
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - name: nix build .#eif
+        run: |
+          nix build .#eif -L --out-link result
+          mkdir -p out && cp result/s3fs.eif out/enclave.eif && cp result/pcr.json out/
+          jq -r '"PCR0 \(.PCR0)"' out/pcr.json
+      # The parent's end of the vsock, static: the parent is stock Amazon Linux, no Nix.
+      - name: nix build .#gvproxy
+        run: |
+          nix build .#gvproxy -L --out-link gvproxy
+          cp gvproxy/bin/gvproxy out/
+      - uses: actions/upload-artifact@v4
+        with: { name: eif, path: out/ }
+
+  cosigner:
+    name: cosigner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: MerlinWallet at the pinned commit
+        run: |
+          . ./pins.env
+          git clone --quiet https://github.com/BitspendPayment/MerlinWallet mw
+          git -C mw checkout --quiet "$MERLINWALLET_REV"
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: wasm32-wasip2 }
+      - name: protoc and wasi-sdk
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q protobuf-compiler
+          # enclave-runtime's scripts/wasi-sdk.sh, pinned the same way.
+          curl -fsSL --retry 3 -o /tmp/wasi-sdk.tar.gz \
+            https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-linux.tar.gz
+          echo "52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c  /tmp/wasi-sdk.tar.gz" | sha256sum -c -
+          mkdir -p ~/wasi-sdk && tar -xf /tmp/wasi-sdk.tar.gz -C ~/wasi-sdk --strip-components=1
+      - name: build
+        run: |
+          mw/scripts/build-cosigner-wasm.sh
+          mkdir -p out && cp mw/cosigner/target/wasm32-wasip2/release/cosigner.wasm out/
+      - uses: actions/upload-artifact@v4
+        with: { name: cosigner, path: out/ }
+
+  platform:
+    name: MerlinPlatform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: MerlinPlatform at the pinned commit, on the same MerlinWallet as the cosigner
+        run: |
+          . ./pins.env
+          git clone --quiet https://github.com/BitspendPayment/MerlinPlatform mp
+          git -C mp checkout --quiet "$MERLINPLATFORM_REV"
+          pinned="$(grep -o 'MerlinWallet", rev = "[0-9a-f]*' mp/Cargo.toml | cut -d'"' -f4 | sort -u)"
+          [ "$pinned" = "$MERLINWALLET_REV" ] || {
+            echo "MerlinPlatform builds against MerlinWallet $pinned, the cosigner is $MERLINWALLET_REV" >&2
+            exit 1
+          }
+      # Static, so it runs on the parent's Amazon Linux whatever its glibc. rustls and ring, no
+      # OpenSSL; musl-gcc builds ring's and secp256k1's C.
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: x86_64-unknown-linux-musl }
+      - name: build
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q protobuf-compiler musl-tools
+          cd mp
+          cargo build --locked --release --target x86_64-unknown-linux-musl --bin merlin-platform
+          mkdir -p ../out && cp target/x86_64-unknown-linux-musl/release/merlin-platform ../out/
+          file ../out/merlin-platform
+      - uses: actions/upload-artifact@v4
+        with: { name: platform, path: out/ }
+
+  release:
+    needs: [eif, cosigner, platform]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dist, merge-multiple: true }
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          . ./pins.env
+          runtime_rev="$(jq -r '.nodes["enclave-runtime"].locked.rev' flake.lock)"
+          cd dist && sha256sum * > SHA256SUMS
+          {
+            echo "PCR0 \`$(jq -r .PCR0 pcr.json)\`"
+            echo
+            echo "- enclave-runtime: \`$runtime_rev\` (flake.lock)"
+            echo "- MerlinWallet: \`$MERLINWALLET_REV\`"
+            echo "- MerlinPlatform: \`$MERLINPLATFORM_REV\`"
+            echo
+            echo 'Rebuild the image: `nix build github:BitspendPayment/merlin-infra/${{ github.ref_name }}#eif && jq -r .PCR0 result/pcr.json`'
+          } > ../notes.md
+          gh release create "${{ github.ref_name }}" --notes-file ../notes.md *

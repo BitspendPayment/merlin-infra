@@ -1,0 +1,5 @@
+.terraform/
+# A local override, e.g. pointing tofu/host's module at an enclave-runtime checkout.
+*_override.tf
+result
+result-*
