@@ -70,7 +70,7 @@ jobs:
           . ./pins.env
           git clone --quiet https://github.com/BitspendPayment/MerlinPlatform mp
           git -C mp checkout --quiet "$MERLINPLATFORM_REV"
-          pinned="$(grep -o 'MerlinWallet", rev = "[0-9a-f]*' mp/Cargo.toml | cut -d'"' -f4 | sort -u)"
+          pinned="$(grep -o 'MerlinWallet", rev = "[0-9a-f]*' mp/Cargo.toml | cut -d'"' -f3 | sort -u)"
           [ "$pinned" = "$MERLINWALLET_REV" ] || {
             echo "MerlinPlatform builds against MerlinWallet $pinned, the cosigner is $MERLINWALLET_REV" >&2
             exit 1
