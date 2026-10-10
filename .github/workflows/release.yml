@@ -23,7 +23,7 @@ jobs:
       - name: nix build .#eif
         run: |
           nix build .#eif -L --out-link result
-          mkdir -p out && cp result/s3fs.eif out/enclave.eif && cp result/pcr.json out/
+          mkdir -p out && cp result/enclave.eif out/enclave.eif && cp result/pcr.json out/
           jq -r '"PCR0 \(.PCR0)"' out/pcr.json
       # The parent's end of the vsock, static: the parent is stock Amazon Linux, no Nix.
       - name: nix build .#gvproxy
