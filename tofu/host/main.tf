@@ -57,7 +57,7 @@ locals {
 # EIF's expectations of its parent (gvproxy's address map, IMDS hop limit) come
 # from the same tree.
 module "enclave" {
-  source = "git::https://github.com/BitspendPayment/enclave-runtime.git//deploy/tofu?ref=ae200d4a7b5bb5374617ef48e5b9cf1bb34a275f"
+  source = "git::https://github.com/BitspendPayment/enclave-runtime.git//deploy/tofu?ref=c2ea60ea573ba294cd9a807a9bf3b174d78e7378"
 
   aws_profile       = "mpc-deployer"
   region            = "us-east-1"
@@ -66,9 +66,13 @@ module "enclave" {
   ami_id            = local.ami
   instance_type     = "c6i.xlarge"
   availability_zone = local.base.availability_zone
-  buckets           = [local.base.data_bucket, local.base.roots_bucket]
-  tls_domains       = ["mutiny.vtxos.network"]
+  roots_bucket      = local.base.roots_bucket
   push_app_id       = local.base.push_app_id
+
+  # v2 keeps the whole pool on one fixed EBS volume (no data bucket). 32 GiB cut
+  # into 200 MiB regions is ~160 tenants; region 0 is the control pool. Raise it
+  # to lift the tenant cap — it cannot grow after genesis.
+  pool_size_gib = 32
 
   # MerlinPlatform on :8443 behind Caddy, which takes its certificate over HTTP-01
   # on :80 — :443 is the enclave's.
