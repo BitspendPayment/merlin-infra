@@ -27,7 +27,7 @@
   # release — mint a fresh one before deploying:
   #   tofu -chdir=tofu/base apply -replace=aws_kms_key.master
   # then paste `tofu -chdir=tofu/base output kms_key_arn` in here.
-  kmsKeyId = "CHANGE-ME-after-kms-replace";
+  kmsKeyId = "arn:aws:kms:us-east-1:639920118099:key/61c4a3ad-0636-4ba3-a50a-5de117c5b526";
   masterKeyParameter = "/merlin/mutinynet/master-key/ce3d1d8269b3991800282eab8cbbf6c7";
 
   # Test coins: root records stay locked for a day, not ten years, so the
@@ -49,5 +49,5 @@
   guestLogGroup = "/merlin-mutinynet/guest";
 
   # `tofu output push_app_id`.
-  pushAppId = "cce7d19f815242c1879d323f11c0bc85";
+  pushAppId = "32c4b59ae8f94bc69473327653f1ebd9";
 }
